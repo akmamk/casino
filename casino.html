@@ -125,84 +125,59 @@
         };
 
         // Загрузка данных
-        async function loadData() {
-            const data = {
-                action: 'get_data'
-            };
-            
-            webApp.sendData(JSON.stringify(data));
+        function loadData() {
+            webApp.sendData(JSON.stringify({action: 'get_data'}));
         }
 
-        // Навигация
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        // Обработка ответов от бота
+        webApp.onEvent('messageSent', (response) => {
+            try {
+                const data = JSON.parse(response);
                 
-                btn.classList.add('active');
-                document.getElementById(btn.dataset.page).classList.add('active');
-            });
+                if (data.status === 'success') {
+                    if (data.data.won_item) {
+                        // Обработка выигрыша
+                        alert(`Вы выиграли: ${data.data.won_item}`);
+                        userData.stars = data.data.stars;
+                        userData.inventory = data.data.inventory;
+                    } else {
+                        // Обновление данных
+                        userData = data.data;
+                    }
+                    updateUI();
+                } else {
+                    alert(data.message || 'Произошла ошибка');
+                }
+            } catch (e) {
+                console.error('Error:', e);
+            }
         });
 
         // Открытие кейсов
         document.querySelectorAll('.case').forEach(caseEl => {
-            caseEl.addEventListener('click', async () => {
+            caseEl.addEventListener('click', () => {
                 const price = parseInt(caseEl.dataset.price);
+                
                 if (userData.stars < price) {
                     alert('Недостаточно звёзд!');
                     return;
                 }
                 
-                userData.stars -= price;
-                updateUI();
+                // Блокируем кнопку на время обработки
+                caseEl.style.pointerEvents = 'none';
                 
-                // Здесь логика открытия кейса
-                const items = ['🔮 Шар', '🗡️ Меч', '🛡️ Щит', '🍀 Клевер', '🏆 Трофей'];
-                const newItem = items[Math.floor(Math.random() * items.length)];
-                userData.inventory.push(newItem);
+                // Отправляем запрос на спин
+                webApp.sendData(JSON.stringify({
+                    action: 'spin',
+                    price: price
+                }));
                 
-                await saveData();
+                // Восстанавливаем кнопку через 2 секунды
+                setTimeout(() => {
+                    caseEl.style.pointerEvents = 'auto';
+                }, 2000);
             });
         });
-
-        // Апгрейд
-        document.getElementById('upgrade-btn').addEventListener('click', async () => {
-            const selectedItem = document.querySelector('#upgrade-list input:checked');
-            if (!selectedItem) {
-                alert('Выберите предмет!');
-                return;
-            }
-            
-            const value = parseInt(document.getElementById('upgrade-value').value);
-            if (userData.stars < value) {
-                alert('Недостаточно звёзд!');
-                return;
-            }
-            
-            // Логика апгрейда
-            const success = Math.random() > (value / 1000);
-            if (success) {
-                const upgradedItems = ['✨ Улучшенный ' + selectedItem.value];
-                userData.inventory = userData.inventory.concat(upgradedItems);
-                alert('Успешный апгрейд!');
-            } else {
-                alert('Апгрейд не удался!');
-            }
-            
-            userData.stars -= value;
-            await saveData();
-        });
-
-        // Сохранение данных
-        async function saveData() {
-            const data = {
-                action: 'update',
-                ...userData
-            };
-            
-            webApp.sendData(JSON.stringify(data));
-            updateUI();
-        }
 
         // Обновление интерфейса
         function updateUI() {
@@ -210,32 +185,10 @@
             
             // Инвентарь
             const inventoryList = document.getElementById('inventory-list');
-            inventoryList.innerHTML = userData.inventory.map(item => `
-                <div class="inventory-item">${item}</div>
-            `).join('');
-            
-            // Апгрейд
-            const upgradeList = document.getElementById('upgrade-list');
-            upgradeList.innerHTML = userData.inventory.map(item => `
-                <div>
-                    <input type="radio" name="upgrade-item" id="${item}" value="${item}">
-                    <label for="${item}">${item}</label>
-                </div>
-            `).join('');
+            inventoryList.innerHTML = userData.inventory.map(item => 
+                `<div class="inventory-item">${item}</div>`
+            ).join('');
         }
-
-        // Получение данных от бота
-        webApp.onEvent('messageSent', (data) => {
-            try {
-                const response = JSON.parse(data);
-                if (response.stars !== undefined) {
-                    userData = response;
-                    updateUI();
-                }
-            } catch (e) {
-                console.error('Error parsing data:', e);
-            }
-        });
 
         // Инициализация
         loadData();
