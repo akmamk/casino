@@ -1,20 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Casino App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino WebApp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: Arial;
+            font-family: 'Arial', sans-serif;
             background: #1a1a2e;
             color: white;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            box-sizing: border-box;
         }
         .header {
             display: flex;
@@ -28,87 +32,193 @@
         .balance {
             font-size: 18px;
             font-weight: bold;
+            color: #ffcc00;
         }
         .nav {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 20px;
+            background: #0f3460;
+            padding: 10px;
+            border-radius: 8px;
         }
         .nav-btn {
             padding: 10px 15px;
-            background: #0f3460;
-            border-radius: 8px;
+            background: transparent;
+            border: none;
+            color: white;
+            border-radius: 5px;
             cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
         }
         .nav-btn.active {
             background: #e94560;
         }
         .page {
             display: none;
+            animation: fadeIn 0.5s;
         }
         .page.active {
             display: block;
         }
-        .cases {
+        .cases-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
+            margin-top: 20px;
         }
         .case {
-            background: linear-gradient(45deg, #ffcc00, #ff9500);
-            padding: 20px;
+            background: linear-gradient(135deg, #ffcc00, #ff9500);
+            padding: 25px 10px;
             border-radius: 10px;
             text-align: center;
             cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .case:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        .case-price {
+            font-weight: bold;
+            margin-top: 5px;
+            color: #fff;
+        }
+        .inventory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
         }
         .inventory-item {
             background: #0f3460;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
+            padding: 12px 15px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        .inventory-item:hover {
+            background: #1a3a6e;
+        }
+        .upgrade-section {
+            margin-top: 20px;
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .upgrade-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        select, button {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            background: #e94560;
+            color: white;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .status-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .success {
+            background: rgba(0, 200, 0, 0.2);
+        }
+        .error {
+            background: rgba(200, 0, 0, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .spinning {
+            animation: spin 1s linear infinite;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="balance">🌟 <span id="stars">0</span></div>
-            <div>Casino App</div>
+            <div class="balance">🌟 Баланс: <span id="stars">0</span></div>
+            <div class="app-title">🎰 Casino App</div>
         </div>
 
         <div class="nav">
-            <div class="nav-btn active" data-page="main">Главная</div>
-            <div class="nav-btn" data-page="inventory">Инвентарь</div>
-            <div class="nav-btn" data-page="upgrade">Апгрейд</div>
+            <button class="nav-btn active" data-page="main">Главная</button>
+            <button class="nav-btn" data-page="inventory">Инвентарь</button>
+            <button class="nav-btn" data-page="upgrade">Апгрейд</button>
         </div>
 
         <div id="main" class="page active">
             <h2>Выберите кейс:</h2>
-            <div class="cases">
-                <div class="case" data-price="50">Обычный (50🌟)</div>
-                <div class="case" data-price="100">Редкий (100🌟)</div>
-                <div class="case" data-price="200">Эпический (200🌟)</div>
-                <div class="case" data-price="500">Легендарный (500🌟)</div>
+            <div class="cases-grid">
+                <div class="case" data-price="50">
+                    <div class="case-icon">🎁</div>
+                    <div class="case-name">Обычный</div>
+                    <div class="case-price">50🌟</div>
+                </div>
+                <div class="case" data-price="100">
+                    <div class="case-icon">🎁</div>
+                    <div class="case-name">Редкий</div>
+                    <div class="case-price">100🌟</div>
+                </div>
+                <div class="case" data-price="200">
+                    <div class="case-icon">🎁</div>
+                    <div class="case-name">Эпический</div>
+                    <div class="case-price">200🌟</div>
+                </div>
+                <div class="case" data-price="500">
+                    <div class="case-icon">🎁</div>
+                    <div class="case-name">Легендарный</div>
+                    <div class="case-price">500🌟</div>
+                </div>
             </div>
+            <div id="spin-status" class="status-message"></div>
         </div>
 
         <div id="inventory" class="page">
             <h2>Ваш инвентарь:</h2>
-            <div id="inventory-list"></div>
+            <div id="inventory-list" class="inventory-list">
+                <!-- Сюда будут добавляться предметы -->
+            </div>
         </div>
 
         <div id="upgrade" class="page">
-            <h2>Апгрейд предметов:</h2>
-            <div id="upgrade-list"></div>
-            <div>
-                <select id="upgrade-value">
-                    <option value="100">100🌟</option>
-                    <option value="200">200🌟</option>
-                    <option value="500">500🌟</option>
-                </select>
-                <button id="upgrade-btn">Улучшить</button>
+            <h2>Улучшение предметов</h2>
+            <div class="upgrade-section">
+                <h3>Выберите предмет для улучшения:</h3>
+                <div id="upgrade-items" class="inventory-list">
+                    <!-- Сюда будут добавляться предметы для улучшения -->
+                </div>
+                
+                <div class="upgrade-controls">
+                    <select id="upgrade-value">
+                        <option value="100">100🌟 (шанс 90%)</option>
+                        <option value="200">200🌟 (шанс 70%)</option>
+                        <option value="500">500🌟 (шанс 50%)</option>
+                    </select>
+                    <button id="upgrade-btn">Улучшить</button>
+                </div>
+                <div id="upgrade-status" class="status-message"></div>
             </div>
         </div>
     </div>
@@ -124,74 +234,191 @@
             upgrades: {}
         };
 
-        // Загрузка данных
-        function loadData() {
-            webApp.sendData(JSON.stringify({action: 'get_data'}));
+        // Инициализация приложения
+        function initApp() {
+            setupNavigation();
+            setupCases();
+            setupUpgrade();
+            loadUserData();
         }
 
-        // Обработка ответов от бота
-        webApp.onEvent('messageSent', (response) => {
-            try {
-                const data = JSON.parse(response);
-                
-                if (data.status === 'success') {
-                    if (data.data.won_item) {
-                        // Обработка выигрыша
-                        alert(`Вы выиграли: ${data.data.won_item}`);
-                        userData.stars = data.data.stars;
-                        userData.inventory = data.data.inventory;
-                    } else {
-                        // Обновление данных
-                        userData = data.data;
-                    }
-                    updateUI();
-                } else {
-                    alert(data.message || 'Произошла ошибка');
-                }
-            } catch (e) {
-                console.error('Error:', e);
-            }
-        });
+        // Настройка навигации
+        function setupNavigation() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.page).classList.add('active');
+                });
+            });
+        }
 
-        // Открытие кейсов
-        document.querySelectorAll('.case').forEach(caseEl => {
-            caseEl.addEventListener('click', () => {
-                const price = parseInt(caseEl.dataset.price);
-                
-                if (userData.stars < price) {
-                    alert('Недостаточно звёзд!');
+        // Настройка кейсов
+        function setupCases() {
+            document.querySelectorAll('.case').forEach(caseEl => {
+                caseEl.addEventListener('click', async () => {
+                    const price = parseInt(caseEl.dataset.price);
+                    
+                    if (userData.stars < price) {
+                        showStatus('Недостаточно звёзд!', 'error');
+                        return;
+                    }
+                    
+                    // Блокируем кейс на время обработки
+                    caseEl.style.pointerEvents = 'none';
+                    const caseIcon = caseEl.querySelector('.case-icon');
+                    caseIcon.classList.add('spinning');
+                    caseIcon.textContent = '🌀';
+                    
+                    showStatus('Открываем кейс...', 'success');
+                    
+                    try {
+                        const response = await sendToBot({
+                            action: 'spin',
+                            price: price
+                        });
+                        
+                        if (response.status === 'success') {
+                            userData = response.data;
+                            updateUI();
+                            showStatus(`Вы выиграли: ${response.data.won_item}`, 'success');
+                        } else {
+                            showStatus(response.message || 'Ошибка при открытии кейса', 'error');
+                        }
+                    } catch (e) {
+                        console.error('Error:', e);
+                        showStatus('Ошибка соединения', 'error');
+                    } finally {
+                        // Восстанавливаем кейс
+                        caseIcon.classList.remove('spinning');
+                        caseIcon.textContent = '🎁';
+                        caseEl.style.pointerEvents = 'auto';
+                    }
+                });
+            });
+        }
+
+        // Настройка системы улучшения
+        function setupUpgrade() {
+            document.getElementById('upgrade-btn').addEventListener('click', async () => {
+                const selectedItem = document.querySelector('#upgrade-items input:checked');
+                if (!selectedItem) {
+                    showStatus('Выберите предмет!', 'error', 'upgrade-status');
                     return;
                 }
                 
-                // Блокируем кнопку на время обработки
-                caseEl.style.pointerEvents = 'none';
+                const value = parseInt(document.getElementById('upgrade-value').value);
+                if (userData.stars < value) {
+                    showStatus('Недостаточно звёзд!', 'error', 'upgrade-status');
+                    return;
+                }
                 
-                // Отправляем запрос на спин
-                webApp.sendData(JSON.stringify({
-                    action: 'spin',
-                    price: price
-                }));
+                const upgradeBtn = document.getElementById('upgrade-btn');
+                upgradeBtn.disabled = true;
+                showStatus('Пытаемся улучшить...', 'success', 'upgrade-status');
                 
-                // Восстанавливаем кнопку через 2 секунды
-                setTimeout(() => {
-                    caseEl.style.pointerEvents = 'auto';
-                }, 2000);
+                try {
+                    const response = await sendToBot({
+                        action: 'upgrade',
+                        item: selectedItem.value,
+                        value: value
+                    });
+                    
+                    if (response.status === 'success') {
+                        userData = response.data;
+                        updateUI();
+                        showStatus(response.message || 'Успешное улучшение!', 'success', 'upgrade-status');
+                    } else {
+                        showStatus(response.message || 'Ошибка улучшения', 'error', 'upgrade-status');
+                    }
+                } catch (e) {
+                    console.error('Error:', e);
+                    showStatus('Ошибка соединения', 'error', 'upgrade-status');
+                } finally {
+                    upgradeBtn.disabled = false;
+                }
             });
-        });
+        }
+
+        // Загрузка данных пользователя
+        function loadUserData() {
+            sendToBot({action: 'get_data'})
+                .then(response => {
+                    if (response.status === 'success') {
+                        userData = response.data;
+                        updateUI();
+                    } else {
+                        showStatus(response.message || 'Ошибка загрузки данных', 'error');
+                    }
+                })
+                .catch(e => {
+                    console.error('Error:', e);
+                    showStatus('Ошибка соединения', 'error');
+                });
+        }
 
         // Обновление интерфейса
         function updateUI() {
+            // Обновляем баланс
             document.getElementById('stars').textContent = userData.stars;
             
-            // Инвентарь
+            // Обновляем инвентарь
             const inventoryList = document.getElementById('inventory-list');
-            inventoryList.innerHTML = userData.inventory.map(item => 
-                `<div class="inventory-item">${item}</div>`
-            ).join('');
+            inventoryList.innerHTML = userData.inventory.map((item, index) => `
+                <div class="inventory-item">
+                    <span>${item}</span>
+                </div>
+            `).join('');
+            
+            // Обновляем список для улучшения
+            const upgradeItems = document.getElementById('upgrade-items');
+            upgradeItems.innerHTML = userData.inventory.map((item, index) => `
+                <div class="inventory-item">
+                    <input type="radio" name="upgrade-item" id="item-${index}" value="${item}">
+                    <label for="item-${index}">${item}</label>
+                </div>
+            `).join('');
         }
 
-        // Инициализация
-        loadData();
+        // Отправка данных боту
+        function sendToBot(data) {
+            return new Promise((resolve, reject) => {
+                webApp.sendData(JSON.stringify(data));
+                
+                const handler = (response) => {
+                    try {
+                        const result = JSON.parse(response);
+                        webApp.offEvent('messageSent', handler);
+                        resolve(result);
+                    } catch (e) {
+                        webApp.offEvent('messageSent', handler);
+                        reject(e);
+                    }
+                };
+                
+                webApp.onEvent('messageSent', handler);
+            });
+        }
+
+        // Показать статус
+        function showStatus(message, type, elementId = 'spin-status') {
+            const statusElement = document.getElementById(elementId);
+            statusElement.textContent = message;
+            statusElement.className = `status-message ${type}`;
+            
+            // Автоматическое скрытие через 3 секунды
+            if (message) {
+                setTimeout(() => {
+                    statusElement.textContent = '';
+                    statusElement.className = 'status-message';
+                }, 3000);
+            }
+        }
+
+        // Запуск приложения
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
