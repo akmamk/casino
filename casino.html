@@ -11,41 +11,75 @@
             text-align: center;
             padding: 20px;
         }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .balance {
+            background: rgba(255, 215, 0, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
         .case {
-            width: 120px;
-            height: 120px;
+            width: 150px;
+            height: 150px;
             background: linear-gradient(45deg, #ffcc00, #ff9500);
             margin: 30px auto;
             border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            font-size: 50px;
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
         }
-        #balance {
-            font-size: 18px;
-            margin: 20px;
+        .case:hover {
+            transform: scale(1.05);
+        }
+        .menu {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .menu-btn {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>🎰 Казино за звёзды</h1>
-    <div id="balance">Ваши звёзды: <span id="stars">100</span> 🌟</div>
+    <div class="header">
+        <div class="balance">🌟 <span id="stars">100</span></div>
+        <div>🎰 Кейсы</div>
+        <div style="width: 60px;"></div>
+    </div>
+
     <div class="case" onclick="spin()">🎁</div>
     <p>Нажмите на кейс, чтобы крутить (50🌟)</p>
 
+    <div class="menu">
+        <div class="menu-btn" onclick="Telegram.WebApp.close()">← Назад</div>
+    </div>
+
     <script>
+        // Получаем текущий баланс из Telegram
+        Telegram.WebApp.expand();
+        
         function spin() {
             const caseElement = document.querySelector('.case');
             caseElement.textContent = "🌀";
+            caseElement.style.pointerEvents = "none";
             
             setTimeout(() => {
                 Telegram.WebApp.sendData(JSON.stringify({
                     action: "spin_case"
                 }));
-                Telegram.WebApp.close();
             }, 1500);
         }
     </script>
